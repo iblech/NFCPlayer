@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.github.muellerma.nfcreader'
+    namespace 'com.github.iblech.nfcplayer'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.github.muellerma.nfcreader"
+        applicationId "com.github.iblech.nfcplayer"
         minSdk 21
         targetSdk 33
         versionCode 2
