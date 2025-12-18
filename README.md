@@ -7,7 +7,17 @@ which in turn is based on [nfc-reader by nadam](https://github.com/mueller-ma/NF
 ## Compilation
 
 Compilation requires the [Nix package manager](https://nixos.org/) (but not
-NixOS). From a checkout, simply execute `nix-build`.
+NixOS). From a checkout, simply execute:
+
+```
+NIXPKGS_ALLOW_UNFREE=1 NIXPKGS_ACCEPT_ANDROID_SDK_LICENSE=1 nix-build
+```
+
+If you don't want to bother with a checkout, use:
+
+```
+NIXPKGS_ALLOW_UNFREE=1 NIXPKGS_ACCEPT_ANDROID_SDK_LICENSE=1 nix-build https://github.com/iblech/NFCPlayer/archive/main.tar.gz
+```
 
 The compilation is hermetic (does not access the internet and is independent
 from locally installed packages) and bit-for-bit reproducible. The resulting
@@ -32,7 +42,7 @@ This has been tested with the package collection from NixOS 25.11. To force
 this collection to be used, use:
 
 ```
-nix-build -I nixpkgs=https://nixos.org/channels/nixos-25.11/nixexprs.tar.xz
+NIXPKGS_ALLOW_UNFREE=1 NIXPKGS_ACCEPT_ANDROID_SDK_LICENSE=1 nix-build -I nixpkgs=https://nixos.org/channels/nixos-25.11/nixexprs.tar.xz
 ```
 
 
