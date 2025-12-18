@@ -20,3 +20,6 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 -dontobfuscate
+
+# For reproducibility, see https://medium.com/@actiwerks/reproducible-mobile-builds-4264c6b7b73e
+-dontusemixedcaseclassnames

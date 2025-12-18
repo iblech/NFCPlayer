@@ -1,5 +1,4 @@
 .gradle
 build
-app/src/main/java/com/github/iblech/nfcreader/Entries.kt
 book.pdf
 app/src/main/res/raw
