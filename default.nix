@@ -4,8 +4,6 @@ let
   androidPkgs = pkgs.androidenv.composeAndroidPackages {
     platformVersions = [ "34" ];
     buildToolsVersions = [ "34.0.0" ];
-    includeNDK = false;
-    ndkVersions = [ "26.1.10909125" ];
   };
 
   gradle-dot-nix = pkgs.fetchFromGitHub {
@@ -68,11 +66,7 @@ pkgs.stdenv.mkDerivation {
   ANDROID_HOME = "${androidPkgs.androidsdk}/libexec/android-sdk";
 
   buildPhase = ''
-    export HOME=$(mktemp -d) SOURCE_DATE_EPOCH=0
-    mkdir -p $HOME/.android
-    base64 -d ${./debug.keystore.b64} > $HOME/.android/debug.keystore
-    base64 -d ${./debug.keystore.b64} > debug.keystore
-    base64 -d ${./debug.keystore.b64} > app/debug.keystore
+    export SOURCE_DATE_EPOCH=0
 
     (
       cd tex
@@ -80,6 +74,7 @@ pkgs.stdenv.mkDerivation {
       pdflatex booklet
     )
 
+    base64 -d ${./debug.keystore.b64} > debug.keystore
     gradle \
       -Dorg.gradle.project.android.aapt2FromMavenOverride=$ANDROID_HOME/build-tools/34.0.0/aapt2 \
       -I ${gradle-init-script} \
