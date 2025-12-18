@@ -135,7 +135,7 @@ class MainActivity : AppCompatActivity() {
             if (b < 0x10) sb.append('0')
             sb.append(Integer.toHexString(b))
             if (i > 0) {
-                sb.append("_")
+                sb.append(":")
             }
         }
         return sb.toString()

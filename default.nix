@@ -1,4 +1,4 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import <nixpkgs> {}, assets ? import ./assets.nix }:
 
 let
   androidPkgs = pkgs.androidenv.composeAndroidPackages {
@@ -18,6 +18,41 @@ let
     # Can be generated using gradle -M sha256 build
     gradle-verification-metadata-file = ./gradle/verification-metadata.xml;
   }).gradle-init;
+
+  fetch-from-youtube = asset: pkgs.stdenv.mkDerivation {
+    name = "asset-raw-${builtins.hashString "sha256" asset.url}";
+    nativeBuildInputs = with pkgs; [ yt-dlp ];
+    unpackPhase = ":";
+    outputHashMode = "recursive";
+    outputHashAlgo = "sha256";
+    outputHash = asset.hash;
+
+    buildPhase = ''
+      mkdir $out
+      cd $out
+      export HOME=$(mktemp -d)
+      yt-dlp -o song.m4a --write-thumbnail -f 140 ${pkgs.lib.escapeShellArg asset.url}
+    '';
+  };
+
+  use-from-youtube = asset: pkgs.stdenv.mkDerivation {
+    name = "asset-full-${builtins.hashString "sha256" asset.url}";
+    src = fetch-from-youtube asset;
+    nativeBuildInputs = with pkgs; [ imagemagick ffmpeg ];
+    buildPhase = ''
+      outdir=$out/${builtins.hashString "sha256" asset.url}
+      mkdir -p $outdir
+      ffmpeg -i song.m4a $outdir/song.mp3
+      magick song.webp $outdir/image.jpeg
+      echo ${pkgs.lib.escapeShellArg asset.color} > $outdir/color.txt
+      echo ${pkgs.lib.escapeShellArg (builtins.concatStringsSep " " asset.tags)} > $outdir/tags.txt
+    '';
+  };
+
+  entries = pkgs.symlinkJoin {
+    name = "entries";
+    paths = map use-from-youtube assets;
+  };
 in
 
 pkgs.stdenv.mkDerivation {
@@ -25,7 +60,7 @@ pkgs.stdenv.mkDerivation {
 
   src = pkgs.runCommandLocal "nfcplayer-src" {} ''
     mkdir $out
-    for i in ${./app} ${./build.gradle} ${./gradle.properties} ${./settings.gradle} ${./tag-images} ${./tex} ${./entries}; do
+    for i in ${./app} ${./build.gradle} ${./gradle.properties} ${./settings.gradle} ${./tag-images} ${./tex} ${entries}; do
       cp --reflink=auto -r $i $out/''${i:44}
     done
 
@@ -34,17 +69,17 @@ pkgs.stdenv.mkDerivation {
     chmod u+w $out/app/src/main/res/raw $out/app/src/main/java/com/github/iblech/nfcreader $out/tex
 
     {
-      for i in ${./entries}/*; do
-        cat $i/tags.txt | while read; do
-          songhash=$(sha256sum $i/song.mp3 | cut -c1-64)
-          cp --reflink=auto --update=none $i/song.mp3 $out/app/src/main/res/raw/song_$songhash.mp3
-          echo "    \"$REPLY\" -> R.raw.song_$songhash"
+      for i in ${entries}/*; do
+        songhash=$(sha256sum $i/song.mp3 | cut -c1-64)
+        cp --reflink=auto $i/song.mp3 $out/app/src/main/res/raw/song_$songhash.mp3
+        for t in $(cat $i/tags.txt); do
+          echo "    \"$t\" -> R.raw.song_$songhash"
         done
       done
     } | sed -i -e '/AUTO-INSERT HERE/ r /dev/stdin' $out/app/src/main/java/com/github/iblech/nfcreader/Entries.kt
 
     {
-      for i in ${./entries}/*; do
+      for i in ${entries}/*; do
         echo "\\includegraphics[width=0.8\\textwidth]{$i/image}"
         echo "\\par"
         echo "\\includegraphics[height=4cm]{../tag-images/$(cat $i/color.txt)}"
