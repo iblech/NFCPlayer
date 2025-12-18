@@ -44,6 +44,7 @@ let
       mkdir -p $outdir
       ffmpeg -i song.m4a $outdir/song.mp3
       magick song.webp $outdir/image.jpeg
+      echo ${pkgs.lib.escapeShellArg asset.url} > $outdir/url.txt
       echo ${pkgs.lib.escapeShellArg asset.color} > $outdir/color.txt
       echo ${pkgs.lib.escapeShellArg (builtins.concatStringsSep " " asset.tags)} > $outdir/tags.txt
     '';
@@ -80,7 +81,7 @@ pkgs.stdenv.mkDerivation {
 
     {
       for i in ${entries}/*; do
-        echo "\\includegraphics[width=0.8\\textwidth]{$i/image}"
+        echo "\\href{$(cat $i/url.txt)}{\\includegraphics[width=0.8\\textwidth]{$i/image}}"
         echo "\\par"
         echo "\\includegraphics[height=4cm]{../tag-images/$(cat $i/color.txt)}"
         echo "\\newpage"
