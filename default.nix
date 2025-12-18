@@ -95,7 +95,6 @@ pkgs.stdenv.mkDerivation {
     openjdk
     kotlin
     androidPkgs.androidsdk
-    strip-nondeterminism
     (texlive.combine { inherit (pkgs.texlive) scheme-small pdftex; })
   ];
 
@@ -115,10 +114,6 @@ pkgs.stdenv.mkDerivation {
       -Dorg.gradle.project.android.aapt2FromMavenOverride=$ANDROID_HOME/build-tools/34.0.0/aapt2 \
       -I ${gradle-init-script} \
       assembleDebug
-  '';
-
-  postFixup = ''
-    strip-nondeterminism app/build/outputs/apk/debug/app-debug.apk
   '';
 
   installPhase = ''
