@@ -6,7 +6,8 @@ which in turn is based on [nfc-reader by nadam](https://github.com/mueller-ma/NF
 
 ## Compilation
 
-Compile, from a checkout, with `nix-build`.
+Compilation requires the [Nix package manager](https://nixos.org/) (but not
+NixOS). From a checkout, simply execute `nix-build`.
 
 The compilation is hermetic (does not access the internet and is independent
 from locally installed packages) and bit-for-bit reproducible. The resulting
