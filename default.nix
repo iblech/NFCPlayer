@@ -42,7 +42,7 @@ let
     buildPhase = ''
       outdir=$out/${builtins.hashString "sha256" asset.url}
       mkdir -p $outdir
-      ffmpeg -i song.m4a $outdir/song.mp3
+      ffmpeg -fflags +bitexact -flags:a +bitexact -i song.m4a $outdir/song.mp3
       magick song.webp $outdir/image.jpeg
       echo ${pkgs.lib.escapeShellArg asset.url} > $outdir/url.txt
       echo ${pkgs.lib.escapeShellArg asset.color} > $outdir/color.txt
