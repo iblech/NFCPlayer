@@ -11,10 +11,11 @@ Compile, from a checkout, with `nix-build`.
 The compilation is hermetic (does not access the internet and is independent
 from locally installed packages) and bit-for-bit reproducible. The resulting
 APK file and booklet PDF will then reside in the `result` directory. In the
-default configuration, the sha256 hashes are:
+default configuration, as of commit `d03f158436e04847af6ad949b316a648b0d3e454`,
+the sha256 hashes are:
 
 ```
-1c29e6a23c96181f3c88b770b4b1d8ea40bb1b597ea9f46048242b407b561c58  booklet.pdf
+1c26d6d694003af3cac3b0136daa3df92b38c4edc676e386fb77bb9c5bfc3971  booklet.pdf
 2719605edc381e1d50b94e662958a29fc1df5ced2746a0c5acc19e34d5233bac  nfcplayer.apk
 ```
 
