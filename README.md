@@ -22,8 +22,8 @@ NIXPKGS_ALLOW_UNFREE=1 NIXPKGS_ACCEPT_ANDROID_SDK_LICENSE=1 nix-build https://gi
 The compilation is hermetic (does not access the internet and is independent
 from locally installed packages) and bit-for-bit reproducible. The resulting
 APK file and booklet PDF will then reside in the `result` directory. In the
-default configuration, as of commit `d03f158436e04847af6ad949b316a648b0d3e454`,
-their sha256 hashes are:
+default configuration, as of commit `7338a728239dc03d82f4dd0634ffd32d6dd7ac66`
+with the nixpkgs collection of NixOS 25.11.1948.c6f52ebd45e5, their sha256 hashes are:
 
 ```
 1c26d6d694003af3cac3b0136daa3df92b38c4edc676e386fb77bb9c5bfc3971  booklet.pdf
