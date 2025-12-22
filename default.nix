@@ -19,40 +19,67 @@ let
     gradle-verification-metadata-file = ./gradle/verification-metadata.xml;
   }).gradle-init;
 
-  fetch-from-youtube = asset: pkgs.stdenv.mkDerivation {
-    name = "asset-raw-${builtins.hashString "sha256" asset.url}";
+  fetchFromYouTube-raw = video: pkgs.stdenv.mkDerivation {
+    name = "nfcplayer-asset-raw-${builtins.hashString "sha256" video.url}";
     nativeBuildInputs = with pkgs; [ yt-dlp ];
     unpackPhase = ":";
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    outputHash = asset.hash;
+    outputHash = video.hash;
 
     buildPhase = ''
       mkdir $out
       cd $out
       export HOME=$(mktemp -d)
-      yt-dlp -o song.m4a --write-thumbnail -f 140 --fixup never ${pkgs.lib.escapeShellArg asset.url}
+      yt-dlp -o song.m4a --write-thumbnail -f 140 --fixup never ${pkgs.lib.escapeShellArg video.url}
     '';
   };
 
-  use-from-youtube = asset: pkgs.stdenv.mkDerivation {
-    name = "asset-full-${builtins.hashString "sha256" asset.url}";
-    src = fetch-from-youtube asset;
+  fetchFromYouTube = video: pkgs.stdenv.mkDerivation {
+    name = "nfcplayer-asset-converted-${builtins.hashString "sha256" video.url}";
+    src = fetchFromYouTube-raw video;
     nativeBuildInputs = with pkgs; [ imagemagick ffmpeg ];
     buildPhase = ''
-      outdir=$out/${builtins.hashString "sha256" asset.url}
-      mkdir -p $outdir
-      ffmpeg -fflags +bitexact -flags:a +bitexact -i song.m4a $outdir/song.mp3
-      magick song.webp $outdir/image.jpeg
-      echo ${pkgs.lib.escapeShellArg asset.url} > $outdir/url.txt
-      echo ${pkgs.lib.escapeShellArg asset.color} > $outdir/color.txt
-      echo ${pkgs.lib.escapeShellArg (builtins.concatStringsSep " " asset.tags)} > $outdir/tags.txt
+      mkdir $out
+      ffmpeg -fflags +bitexact -flags:a +bitexact -i song.m4a $out/song.mp3
+      magick song.webp $out/cover.jpeg
+      echo ${pkgs.lib.escapeShellArg video.url} > $out/url.txt
     '';
   };
 
+  berryIcons = pkgs.lib.genAttrs [
+    "black"
+    "blue"
+    "darkgreen"
+    "gray"
+    "lightgreen"
+    "purple"
+    "red"
+    "white"
+    "yellow"
+  ] (color: ./berry-icons + "/${color}.jpeg");
+
+  prepareAsset = asset:
+    let id = builtins.hashString "sha256" (builtins.toJSON asset);
+    in pkgs.stdenv.mkDerivation {
+      name = "nfcplayer-asset-full-${id}";
+      src = [ asset.src ];
+      buildPhase = ''
+        songhash=$(sha256sum song.mp3 | cut -c1-64)
+        outdir=$out/$songhash
+        mkdir -p $outdir
+        cp --reflink=auto song.mp3 cover.jpeg $outdir/
+        if [ -e url.txt ]; then
+          cp --reflink=auto url.txt $outdir/
+        fi
+        cp --reflink=auto ${asset.icon} $outdir/icon.jpeg
+        echo ${pkgs.lib.escapeShellArg (builtins.concatStringsSep " " asset.tags)} > $outdir/tags.txt
+      '';
+    };
+
   entries = pkgs.symlinkJoin {
-    name = "entries";
-    paths = map use-from-youtube assets;
+    name = "nfcplayer-entries";
+    paths = map prepareAsset (assets { inherit fetchFromYouTube berryIcons; });
   };
 in
 
@@ -61,7 +88,7 @@ pkgs.stdenv.mkDerivation {
 
   src = pkgs.runCommandLocal "nfcplayer-src" {} ''
     mkdir $out
-    for i in ${./app} ${./build.gradle} ${./gradle.properties} ${./settings.gradle} ${./tag-images} ${./tex} ${entries}; do
+    for i in ${./app} ${./build.gradle} ${./gradle.properties} ${./settings.gradle} ${./tex} ${entries}; do
       cp --reflink=auto -r $i $out/''${i:44}
     done
 
@@ -81,9 +108,13 @@ pkgs.stdenv.mkDerivation {
 
     {
       for i in ${entries}/*; do
-        echo "\\href{$(cat $i/url.txt)}{\\includegraphics[width=0.8\\textwidth]{$i/image}}"
+        if [ -e "$i/url.txt" ]; then
+          echo "\\href{$(cat $i/url.txt)}{\\includegraphics[width=0.8\\textwidth]{$i/cover}}"
+        else
+          echo "\\includegraphics[width=0.8\\textwidth]{$i/cover}"
+        fi
         echo "\\par"
-        echo "\\includegraphics[height=4cm]{../tag-images/$(cat $i/color.txt)}"
+        echo "\\includegraphics[height=4cm]{$i/icon}"
         echo "\\newpage"
         echo
       done
