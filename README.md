@@ -35,6 +35,12 @@ with the nixpkgs collection of NixOS 25.11.1948.c6f52ebd45e5, their sha256 hashe
 
 Put your favorite songs in `assets.nix`.
 
+If you want to avoid a Git checkout and still provide your own assets file, use:
+
+```
+NIXPKGS_ALLOW_UNFREE=1 NIXPKGS_ACCEPT_ANDROID_SDK_LICENSE=1 nix-build https://github.com/iblech/NFCPlayer/archive/main.tar.gz --arg assets "$(cat ./own-assets.nix)"
+```
+
 
 ## Version pinning
 
