@@ -101,12 +101,10 @@ pkgs.stdenv.mkDerivation {
   ANDROID_HOME = "${androidPkgs.androidsdk}/libexec/android-sdk";
 
   buildPhase = ''
-    export SOURCE_DATE_EPOCH=0
-
     (
       cd tex
-      pdflatex booklet
-      pdflatex booklet
+      SOURCE_DATE_EPOCH=0 pdflatex booklet
+      SOURCE_DATE_EPOCH=0 pdflatex booklet
     )
 
     base64 -d ${./debug.keystore.b64} > debug.keystore
