@@ -31,7 +31,7 @@ let
       mkdir $out
       cd $out
       export HOME=$(mktemp -d)
-      yt-dlp -o song.m4a --write-thumbnail -f 140 ${pkgs.lib.escapeShellArg asset.url}
+      yt-dlp -o song.m4a --write-thumbnail -f 140 --fixup never ${pkgs.lib.escapeShellArg asset.url}
     '';
   };
 
