@@ -38,10 +38,11 @@ let
   fetchFromYouTube = video: pkgs.stdenv.mkDerivation {
     name = "nfcplayer-asset-converted-${builtins.hashString "sha256" video.url}";
     src = fetchFromYouTube-raw video;
-    nativeBuildInputs = with pkgs; [ imagemagick ffmpeg ];
+    nativeBuildInputs = with pkgs; [ imagemagick ffmpeg eyed3 ];
     buildPhase = ''
       mkdir $out
-      ffmpeg -fflags +bitexact -flags:a +bitexact -i song.m4a $out/song.mp3
+      ffmpeg -fflags +bitexact -flags:a +bitexact -i song.m4a -write_xing 0 $out/song.mp3
+      eyeD3 --remove-all $out/song.mp3
       magick song.webp $out/cover.jpeg
       echo ${pkgs.lib.escapeShellArg video.url} > $out/url.txt
     '';
