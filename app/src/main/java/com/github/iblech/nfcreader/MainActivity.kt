@@ -3,26 +3,17 @@ package com.github.iblech.nfcplayer
 import android.app.PendingIntent
 import android.content.Intent
 import android.media.MediaPlayer
-import android.nfc.NdefMessage
-import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
 import android.nfc.Tag
-import android.nfc.tech.MifareClassic
-import android.nfc.tech.MifareUltralight
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.github.iblech.nfcplayer.record.ParsedNdefRecord
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import java.text.SimpleDateFormat
-import java.util.*
 import com.github.iblech.nfcplayer.tagToRawResource
 
 class MainActivity : AppCompatActivity() {
@@ -93,21 +84,15 @@ class MainActivity : AppCompatActivity() {
             NfcAdapter.ACTION_NDEF_DISCOVERED
         )
         if (intent.action in validActions) {
-            val messages = mutableListOf<NdefMessage>()
-            val empty = ByteArray(0)
-            val id = intent.getByteArrayExtra(NfcAdapter.EXTRA_ID)
             val tag = intent.parcelable<Tag>(NfcAdapter.EXTRA_TAG) ?: return
-            val payload = dumpTagData(tag).toByteArray()
-            val record = NdefRecord(NdefRecord.TNF_UNKNOWN, empty, id, payload)
-            val msg = NdefMessage(arrayOf(record))
-            messages.add(msg)
+            val tagId = toHex(tag.id)
 
             if(player != null) {
                 player?.release()
                 player = null
             }
 
-            val resId = tagToRawResource(toHex(tag.id))
+            val resId = tagToRawResource(tagId)
             if(resId != null) {
                 player = MediaPlayer.create(this, resId)
                 player?.setOnCompletionListener {
@@ -117,15 +102,8 @@ class MainActivity : AppCompatActivity() {
                 player?.start()
             }
 
-            buildTagViews(messages)
+            addTagIdToView(tagId)
         }
-    }
-
-    private fun dumpTagData(tag: Tag): String {
-        val sb = StringBuilder()
-        val id = tag.id
-        sb.append(toHex(id))
-        return sb.toString()
     }
 
     private fun toHex(bytes: ByteArray): String {
@@ -141,21 +119,10 @@ class MainActivity : AppCompatActivity() {
         return sb.toString()
     }
 
-    private fun buildTagViews(msgs: List<NdefMessage>) {
-        if (msgs.isEmpty()) {
-            return
-        }
+    private fun addTagIdToView(tagId: String) {
         val inflater = LayoutInflater.from(this)
-        val content = tagList
-
-        // Parse the first message in the list
-        // Build views for all of the sub records
-        val records = NdefMessageParser.parse(msgs[0])
-        val size = records.size
-        for (i in 0 until size) {
-            val record: ParsedNdefRecord = records[i]
-            content!!.addView(record.getView(this, inflater, content, i), 1 + i)
-            content.addView(inflater.inflate(R.layout.tag_divider, content, false), 2 + i)
-        }
+        val view = inflater.inflate(R.layout.tag_text, tagList, false) as TextView
+        view.text = tagId
+        tagList?.addView(view, 0)
     }
 }

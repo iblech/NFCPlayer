@@ -22,13 +22,5 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-        <TextView
-                android:id="@+id/tag_viewer_text"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-                android:autoLink="email|web"
-                android:text="@string/intro_message" />
     </LinearLayout>
 </ScrollView>

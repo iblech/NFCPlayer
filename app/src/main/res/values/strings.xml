@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Translation instructions can be found in the Readme -->
 <resources
         xmlns:tools="http://schemas.android.com/tools"
         tools:ignore="MissingTranslation, ExtraTranslation">
     <string name="app_name">NFC Player</string>
-    <string name="intro_message">foo</string>
-    <string name="no_nfc">NFC isn\'t supported on this device</string>
-    <string name="clear_all">Clear all</string>
+    <string name="no_nfc">NFC is not supported on this device</string>
     <string name="close_app">Close app</string>
 </resources>
